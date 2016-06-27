@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import Photos
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     let imageView = UIImageView()
+    let locationLabel = UILabel()
     
     var image: UIImage? = nil {
         didSet {
@@ -33,6 +35,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imageView.frame = self.view.bounds
         imageView.contentMode = .ScaleAspectFit
         view.addSubview(imageView)
+        
+        locationLabel.frame = CGRectMake(0, 64, self.view.frame.size.width, 44)
+        locationLabel.backgroundColor = UIColor.lightGrayColor()
+        locationLabel.textAlignment = .Center
+        view.addSubview(locationLabel)
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -64,6 +72,22 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     // MARK: - UIImagePickerControllerDelegate
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        let url = info[UIImagePickerControllerReferenceURL] as? NSURL
+        guard let UnwrappedUrl = url else { return }
+        let fetchResult = PHAsset.fetchAssetsWithALAssetURLs([UnwrappedUrl], options: nil)
+        let asset = fetchResult.firstObject as? PHAsset
+        let location = asset?.location
+        if let l = location {
+            print(l)
+            let lat = l.coordinate.latitude
+            let long = l.coordinate.longitude
+            
+            let latString = String(lat)
+            let longString = String(long)
+            locationLabel.text = "lat: \(latString), long: \(longString)"
+        }
+        
+        
         let image = info[UIImagePickerControllerOriginalImage] as? UIImage
         self.image = image
         self.dismissViewControllerAnimated(true, completion: nil)
